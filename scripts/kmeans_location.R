@@ -29,3 +29,5 @@ clustering <- kmeans(merged_data %>% select(longitude, latitude), 4)
 merged_data <- merged_data %>% mutate(cluster = clustering$cluster)
 
 merged_data %>% ggplot(aes(x = longitude, y = latitude, color=cluster)) + geom_point() + xlim(-180, 180) + ylim(-90, 90)
+
+# write.csv(merged_data, "data/country_locations_cluster.csv", row.names=FALSE)

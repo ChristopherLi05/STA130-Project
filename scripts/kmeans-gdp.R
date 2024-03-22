@@ -45,7 +45,7 @@ gdp_data <- gdp_data %>% mutate(cluster = clustering$cluster) %>% mutate(cluster
 
 gdp_data %>% ggplot(aes(x=log_recent, group=cluster, fill=cluster)) + geom_histogram(bins = 10)
 
-# write.csv(gdp_data, "data/clean_country_gdps.csv", row.names=FALSE)
+write.csv(gdp_data, "data/clean_country_gdps.csv", row.names=FALSE)
 
 
 
