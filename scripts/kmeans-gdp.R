@@ -40,17 +40,16 @@ gdp_data <- read_csv("data/country_gdps.csv") %>%
 #   scale_x_continuous(breaks=1:10)
 
 
+# 4 Groups
 clustering <- kmeans(gdp_data$log_recent, 4)
 gdp_data <- gdp_data %>% mutate(cluster = clustering$cluster) %>% mutate(cluster = case_when(cluster == 3 ~ 2, cluster == 4 ~ 3, cluster == 2 ~ 4, cluster == 1 ~ 1))
-
 gdp_data %>% ggplot(aes(x=log_recent, group=cluster, fill=cluster)) + geom_histogram(bins = 10)
 
+
+
+# # 3 Groups
+# clustering <- kmeans(gdp_data$log_recent, 3)
+# gdp_data <- gdp_data %>% mutate(cluster = clustering$cluster)  %>% mutate(cluster = case_when(cluster == 3 ~ 2, cluster == 2 ~ 3, cluster == 1 ~ 1))
+# gdp_data %>% ggplot(aes(x=log_recent, group=cluster, fill=cluster)) + geom_histogram(bins = 10)
+
 write.csv(gdp_data, "data/clean_country_gdps.csv", row.names=FALSE)
-
-
-
-
-
-
-
-

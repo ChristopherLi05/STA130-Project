@@ -2,7 +2,7 @@ library(tidyverse)
 set.seed(69420)
 
 country_locations = read_csv("data/clean_country_locations.csv")
-gdp_data = read_csv("data/clean_country_gdps.csv") %>% filter(cluster==1 & country_code %in% country_locations$country_code) %>% select(-cluster)
+gdp_data = read_csv("data/clean_country_gdps.csv") %>% filter(cluster==2 & country_code %in% country_locations$country_code) %>% select(-cluster)
 
 merged_data = merge(gdp_data, country_locations, by="country_code")
 
@@ -30,4 +30,4 @@ merged_data <- merged_data %>% mutate(cluster = clustering$cluster)
 
 merged_data %>% ggplot(aes(x = longitude, y = latitude, color=cluster)) + geom_point() + xlim(-180, 180) + ylim(-90, 90)
 
-# write.csv(merged_data, "data/country_locations_cluster.csv", row.names=FALSE)
+write.csv(merged_data, "data/country_locations_cluster.csv", row.names=FALSE)
