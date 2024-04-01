@@ -1,0 +1,54 @@
+library(dplyr)
+library(tidyr)
+
+set.seed(694201)
+
+cleangdps <- read_csv("clean_country_gdps.csv")
+cleanind <- read_csv("Very_clean_country_indicators.csv")
+
+# merging da data
+merged_data <- merge(cleangdps, cleanind, by.x = "country_code", by.y = "iso3", all.x = TRUE)
+
+bootstrap_ci <- function(data, n_bootstrap = 1000) {
+  bootstrap_means <- replicate(n_bootstrap, mean(sample(data, replace = TRUE), na.rm = TRUE))
+  ci <- quantile(bootstrap_means, probs = c(0.025, 0.975))
+  list(mean = mean(bootstrap_means), ci_lower = ci[1], ci_upper = ci[2], bootstrap_means = bootstrap_means)
+}
+
+# applying the bootstrap Function and preparing the data for plotting
+bootstrap_results <- merged_data %>% 
+  filter(!is.na(sowc_education__completion_completion_rate_2013_2021_avg)) %>% 
+  group_by(cluster) %>%
+  summarise(bootstrap_data = list(bootstrap_ci(sowc_education__completion_completion_rate_2013_2021_avg)),
+            .groups = 'drop')
+
+# Extracting results for plotting
+bootstrap_distributions <- do.call(rbind, lapply(1:nrow(bootstrap_results), function(i) {
+  data.frame(cluster = bootstrap_results$cluster[i], 
+             bootstrap_means = bootstrap_results$bootstrap_data[[i]]$bootstrap_means)
+}))
+
+ci_data <- do.call(rbind, lapply(1:nrow(bootstrap_results), function(i) {
+  with(bootstrap_results$bootstrap_data[[i]],
+       data.frame(cluster = bootstrap_results$cluster[i], 
+                  mean = mean, 
+                  ci_lower = ci_lower, 
+                  ci_upper = ci_upper))
+}))
+# ploting bootstrap distributions
+ggplot(bootstrap_distributions, aes(x = bootstrap_means, fill = as.factor(cluster))) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Bootstrap Distributions of Education Completion Rates", 
+       x = "Bootstrap Means", 
+       y = "Density", 
+       fill = "Cluster") +
+  theme_minimal()
+
+# plotting for confidence intervals
+ggplot(ci_data, aes(x = as.factor(cluster), y = mean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
+  labs(title = "95% Confidence Intervals for Education Completion Rates by Cluster", 
+       x = "Cluster", 
+       y = "Mean Education Completion Rate") +
+  theme_minimal()
