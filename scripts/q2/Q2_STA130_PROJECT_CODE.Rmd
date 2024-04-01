@@ -3,8 +3,8 @@ library(tidyr)
 
 set.seed(694201)
 
-cleangdps <- read_csv("clean_country_gdps.csv")
-cleanind <- read_csv("Very_clean_country_indicators.csv")
+cleangdps <- read_csv("data/clean_country_gdps.csv")
+cleanind <- read_csv("data/Very_clean_country_indicators.csv")
 
 # merging da data
 merged_data <- merge(cleangdps, cleanind, by.x = "country_code", by.y = "iso3", all.x = TRUE)
