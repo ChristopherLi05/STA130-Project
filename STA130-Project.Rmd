@@ -188,7 +188,7 @@ print(merged_data %>% group_by(cluster) %>% summarize(m = mean(score)))
 for (i in 1:3) {
   for (j in (i+1):4) {
     print(paste("Group", i, "with Group", j));
-    model1 <- lm(score ~ cluster, data = merged_data %>% filter(cluster == i | cluster == j))
+    model1 <- lm(score ~ cluster, data = merged_data %>% filter(cluster == i | cluster == j) %>% mutate(cluster =  as.character(cluster)))
     print(summary(model1)$coefficients)
   }
 }
