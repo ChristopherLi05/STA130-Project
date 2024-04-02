@@ -41,7 +41,8 @@ if (FALSE) {
   median = median(gdp_data$log_recent)
   iqr = IQR(gdp_data$log_recent)
 
-  gdp_data <- gdp_data %>% filter(median - 1.5 * iqr < log_recent & log_recent < median + 1.5 * iqr)
+  gdp_data <- gdp_data %>% filter(median - 1.5 * iqr < log_recent & 
+                                    log_recent < median + 1.5 * iqr)
 }
 ```
 
@@ -77,7 +78,11 @@ Actually performing k-means on the data, lower number group indicate lower gdp g
 
 ```{r}
 clustering <- kmeans(gdp_data$log_recent, 4)
-gdp_data <- gdp_data %>% mutate(cluster = clustering$cluster) %>% mutate(cluster = case_when(cluster == 3 ~ 2, cluster == 4 ~ 3, cluster == 2 ~ 4, cluster == 1 ~ 1))
+gdp_data <- gdp_data %>% mutate(cluster = clustering$cluster) %>% 
+                         mutate(cluster = case_when(cluster == 3 ~ 2, 
+                                                    cluster == 4 ~ 3, 
+                                                    cluster == 2 ~ 4, 
+                                                    cluster == 1 ~ 1))
 ```
 
 Plotting k-means
@@ -101,10 +106,15 @@ Google's data-set uses Alpha-2 code, I need to convert to Alpha-3 since UNICEF u
 
 ```{r}
 country_locations <- read_csv("data/country_locations.csv") %>% select(-name)
-country_codes <- read_csv("data/country_codes.csv") %>% filter(`Alpha-2 Code` %in% country_locations$country) %>% mutate(alpha_2 = `Alpha-2 Code`, alpha_3 = `Alpha-3 Code`) %>% select(-`Alpha-2 Code`, -`Alpha-3 Code`, -Country) 
-country_locations <- country_locations %>% filter(country %in% country_codes$alpha_2) %>% mutate(alpha_2 = country) %>% select(-country)
+country_codes <- read_csv("data/country_codes.csv") %>% 
+    filter(`Alpha-2 Code` %in% country_locations$country) %>% 
+    mutate(alpha_2 = `Alpha-2 Code`, alpha_3 = `Alpha-3 Code`) %>% 
+    select(-`Alpha-2 Code`, -`Alpha-3 Code`, -Country) 
+country_locations <- country_locations %>% filter(country %in% country_codes$alpha_2) %>% 
+    mutate(alpha_2 = country) %>% select(-country)
 
-merged_data <- merge(country_locations, country_codes, by="alpha_2") %>% mutate(country_code = alpha_3) %>% select(country_code, latitude, longitude)
+merged_data <- merge(country_locations, country_codes, by="alpha_2") %>% 
+    mutate(country_code = alpha_3) %>% select(country_code, latitude, longitude)
 ```
 
 Writing cleaned CSV to a file, for the purpose of this rmd file, we will just be setting it to a variable
@@ -159,7 +169,8 @@ Plotting k-means
 
 ```{r}
 # TODO - add a map projection behind this?
-merged_data %>% ggplot(aes(x = longitude, y = latitude, color=cluster)) + geom_point() + xlim(-180, 180) + ylim(-90, 90)
+merged_data %>% ggplot(aes(x = longitude, y = latitude, color=cluster)) + 
+                    geom_point() + xlim(-180, 180) + ylim(-90, 90)
 ```
 
 
@@ -175,9 +186,14 @@ country_locations_cluster <- merged_data
 
 ```{r}
 country_locations <- data.frame(country_locations_cluster)
-sdr_goals <- read_csv("data/sdr_fd5e4b5a.csv") %>% mutate(country_code = `Country Code ISO3`, score = `2023 SDG Index Score`) %>% select(country_code, score) %>% filter(country_code %in% country_locations$country_code)
+sdr_goals <- read_csv("data/sdr_fd5e4b5a.csv") %>% 
+    mutate(country_code = `Country Code ISO3`, 
+           score = `2023 SDG Index Score`) %>% 
+    select(country_code, score) %>% 
+    filter(country_code %in% country_locations$country_code)
 
-merged_data <- merge(sdr_goals, country_locations, by="country_code") %>% filter(!is.na(score))
+merged_data <- merge(sdr_goals, country_locations, by="country_code") %>% 
+    filter(!is.na(score))
 ```
 
 Summaries
@@ -188,7 +204,11 @@ print(merged_data %>% group_by(cluster) %>% summarize(m = mean(score)))
 for (i in 1:3) {
   for (j in (i+1):4) {
     print(paste("Group", i, "with Group", j));
-    model1 <- lm(score ~ cluster, data = merged_data %>% filter(cluster == i | cluster == j) %>% mutate(cluster =  as.character(cluster)))
+    model1 <- lm(
+      score ~ cluster, 
+      data = merged_data %>% filter(cluster == i | cluster == j) %>% 
+        mutate(cluster =  as.character(cluster))
+    )
     print(summary(model1)$coefficients)
   }
 }
@@ -198,7 +218,8 @@ for (i in 1:3) {
 Grouped Boxplot visualization
 
 ```{r}
-merged_data %>% ggplot(aes(x=cluster, y=score, group=cluster, fill=cluster)) + geom_boxplot()
+merged_data %>% ggplot(aes(x=cluster, y=score, group=cluster, fill=cluster)) + 
+                  geom_boxplot()
 ``` 
 
 ## Question 2
@@ -211,13 +232,16 @@ set.seed(694201)
 cleangdps <- data.frame(clean_country_gdps)
 cleanind <- read_csv("data/Very_clean_country_indicators.csv")
 
-merged_data <- merge(cleangdps, cleanind, by.x = "country_code", by.y = "iso3", all.x = TRUE)
+merged_data <- merge(cleangdps, cleanind, by.x = "country_code", by.y = "iso3", 
+                     all.x = TRUE)
 
 # merging da data
 bootstrap_ci <- function(data, n_bootstrap = 1000) {
-  bootstrap_means <- replicate(n_bootstrap, mean(sample(data, replace = TRUE), na.rm = TRUE))
+  bootstrap_means <- replicate(n_bootstrap, mean(sample(data, replace = TRUE), 
+                                                 na.rm = TRUE))
   ci <- quantile(bootstrap_means, probs = c(0.025, 0.975))
-  list(mean = mean(bootstrap_means), ci_lower = ci[1], ci_upper = ci[2], bootstrap_means = bootstrap_means)
+  list(mean = mean(bootstrap_means), ci_lower = ci[1], ci_upper = ci[2], 
+       bootstrap_means = bootstrap_means)
 }
 ```
 
@@ -228,7 +252,9 @@ Doing bootstrapping
 bootstrap_results <- merged_data %>% 
   filter(!is.na(sowc_education__completion_completion_rate_2013_2021_avg)) %>% 
   group_by(cluster) %>%
-  summarise(bootstrap_data = list(bootstrap_ci(sowc_education__completion_completion_rate_2013_2021_avg)),
+  summarise(bootstrap_data = list(bootstrap_ci(
+      sowc_education__completion_completion_rate_2013_2021_avg
+    )),
             .groups = 'drop')
 ```
 
@@ -274,13 +300,16 @@ How well does one’s socio-economic status correlate with a country’s progres
 We are using Goal 1 as a different measure of a country's socio-economic status
 
 ```{r}
-sdr_goals <- read_csv("data/sdr_fd5e4b5a.csv") %>% mutate(goal_1 = `Goal 1 Score`, goal_3 = `Goal 3 Score`) %>% select(goal_1, goal_3) %>% filter(!is.na(goal_1) & !is.na(goal_3))
+sdr_goals <- read_csv("data/sdr_fd5e4b5a.csv") %>% 
+  mutate(goal_1 = `Goal 1 Score`, goal_3 = `Goal 3 Score`) %>%
+  select(goal_1, goal_3) %>% filter(!is.na(goal_1) & !is.na(goal_3))
 ```
 
 Plotting the result
 
 ```{r}
-sdr_goals %>% ggplot(aes(x=goal_1, y=goal_3)) + geom_point() + geom_smooth(method="lm", se=FALSE)
+sdr_goals %>% ggplot(aes(x=goal_1, y=goal_3)) + geom_point() + 
+                geom_smooth(method="lm", se=FALSE)
 ```
 
 Model Coefficients
@@ -293,7 +322,8 @@ Plotting residual plot
 
 ```{r}
 df <- fortify(model)
-df %>% ggplot(aes(x = goal_1, y = .resid)) + geom_point() + geom_smooth(method="lm", se=FALSE)
+df %>% ggplot(aes(x = goal_1, y = .resid)) + geom_point() + geom_smooth(method="lm", 
+                                                                        se=FALSE)
 ```
 
 
