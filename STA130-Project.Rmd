@@ -162,6 +162,7 @@ Plotting k-means
 merged_data %>% ggplot(aes(x = longitude, y = latitude, color=cluster)) + geom_point() + xlim(-180, 180) + ylim(-90, 90)
 ```
 
+
 Writing cleaned CSV to a file, for the purpose of this rmd file, we will just be setting it to a variable
 
 ```{r}
@@ -192,6 +193,13 @@ for (i in 1:3) {
   }
 }
 ```
+
+
+Grouped Boxplot visualization
+
+```{r}
+merged_data %>% ggplot(aes(x=cluster, y=score, group=cluster, fill=cluster)) + geom_boxplot()
+``` 
 
 ## Question 2
 
