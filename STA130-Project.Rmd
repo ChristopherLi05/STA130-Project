@@ -124,7 +124,7 @@ Writing cleaned CSV to a file, for the purpose of this rmd file, we will just be
 clean_country_locations <- merged_data
 ```
 
-### Doing k-means on the location
+## Doing k-means on the location
 
 Cleaning datasets
 
@@ -222,6 +222,19 @@ merged_data %>% ggplot(aes(x=cluster, y=score, group=cluster, fill=cluster)) +
                   geom_boxplot()
 ``` 
 
+### Analysis
+
+To answer this question, we decided to find out whether there is a significant difference in the average distance towards the Sustainable Development Goals (SDGs) among groups based on geographical location within the second-lowest socio-economic bracket.
+
+
+First of all, we obtained the data for the second-lowest socio-economic status bracket. We measure each country’s socio-economic status using its GDP data collected by the World Bank in 2022/2021. We transformed all of the countries’ GDP onto a log10 scale and used the k-means algorithm to split them into 4 distinct groups: low, medium, high, and very-high. To be specific, we cleaned the data by selecting the "country_code" and "log_recent" columns from the country_gdps.csv dataset, excluding rows with missing values, and stored this cleaned data in gdp_data. Then, using the Elbow method, we found out that 3,4 clusters is optimal. After doing k-means with 4 clusters, we added an additional variable named cluster to gdp_data, where lower number group indicates lower gdp group. Finally, we created a histogram of the country GDPs, with bins colored according to their assigned cluster. This provides a visual representation of the distribution of the clusters.
+
+
+Secondly, doing k-means on the location. From the country_locations.csv and country_codes.csv dataset, we merged them to a file named “clean_country_locations.csv” containing three variables, country codes, latitude and longitude coordinates. We then merged the filtered GDP data with the clean_country_location data by matching values in the "country_code" column. Using the Elbow method again, we knew that 3,4 clusters is optimal. Given the longitude and latitude of each country, we grouped them using the k-means with 4 clusters according to their location. After that, we created a scatter plot of the country locations, with points colored according to their assigned cluster.
+Finally, doing hypothesis testing on the different groups. We used the group and summarize function to group the merged data by the "cluster" column and calculate the mean SDG score for each cluster. We then compared different groups based on the cluster variable using linear regression. After that, we generated a boxplot that visualizes the distribution of scores across different clusters.
+
+Based on the results of the linear regression, all p-values above 0.05 suggest that there is not enough evidence to reject the null hypothesis that the average distance is the same among the groups. Therefore, we concluded that in the second-lowest socio-economic bracket, if we group countries based on location, there are no significant differences among the groups in terms of the average distance towards the SDGs. However, it's important to note that this does not necessarily mean that there are no differences. It simply means that we cannot confidently claim that the differences observed are statistically significant at the chosen alpha level.
+
 ## Question 2
 
 For each socio-economic bracket, what is a range of plausible values for the success of education SDG’s?
@@ -293,6 +306,18 @@ ggplot(ci_data, aes(x = as.factor(cluster), y = mean)) +
   theme_minimal()
 ```
 
+### Analysis
+
+This question was taken to find the relationship between a country’s socioeconomic status and its education completion rates and how a country’s socioeconomic status dictates how likely it is to achieve its education SDGs.
+
+The education completion rates were found by first cleaning the data in the country indicators file and removing any countries that had missing values for education completion rates (as this would lead to the most accurate results), thereafter the averages of primary/lower-secondary/upper-secondary sowc_education_completion rates were taken to find the average_sowc_education_completion rate. The socioeconomic brackets were found using the methods previously mentioned.
+
+Following that we utilized a bootstrap resampling technique to estimate the sampling distribution of the mean completion rate of education SDGs for each socioeconomic bracket. A 95% bootstrap confidence interval was constructed thus allowing for a good assessment of the relationship.
+
+After doing so we constructed two plots, one to show the bootstrap distributions of education completion rates and another for displaying the confidence intervals for each socioeconomic bracket. The first plot told us that countries in the low socioeconomic bracket had a more consistent rate of education completion across its population (as told by the taller peak) than countries in the medium socio-economic bracket indicating a smaller disparity in the completion rate for its population. Moreover, there was a significant overlap between the medium and low socio-economic brackets and the high and very high socio-economic brackets telling us they have similar characteristics. It also tells us that countries in the very high socioeconomic bracket have three distinct groups or subpopulations (as told by the tri-modal distribution) indicating a big disparity in the completion rates within the countries. The second plot tells us that the lower socioeconomic brackets (low, medium) have lower mean education completion rates as compared to the two higher brackets (high, very high) it also tells us that the mean completion rates for countries in the low and medium socio-economic brackets were very similar (58.69 and 58.84 respectively) This was also seen for countries in the high and very high socio-economic brackets (77.10 and 78.43 respectively).
+
+The results indicate that the performance of the education SDGs is significantly influenced by socioeconomic considerations. The observed range in completion rates is a result of differences in access to resources and education among various socioeconomic groups. To guarantee equal access to education and improve the overall achievement of SDG targets, targeted actions meant to alleviate these gaps are required.
+
 ## Question 3
 
 How well does one’s socio-economic status correlate with a country’s progress towards the health SDGs?
@@ -326,4 +351,14 @@ df %>% ggplot(aes(x = goal_1, y = .resid)) + geom_point() + geom_smooth(method="
                                                                         se=FALSE)
 ```
 
+### Analysis
 
+This question was attempted in order to try and understand the relationship between a country’s socio-economic status, and its progress towards health-related SDGs. The socio-economic status in this case was represented by the country’s Goal 1 score, and the progress towards the health-related SDGs were represented by the country’s Goal 3 score. 
+
+We first started approaching this question by looking in our dataset and filtering out any missing values within the Goal 1 and Goal 3 scores. This allows our results to be based on complete data without any missing scores hindering it. We then constructed a scatter plot in order to visualize the relationship between the Goal 1 scores and Goal 3 scores. This visualization allowed us to make our initial observations of any potential patterns or trends within the data. In this plot, we observed a positive relationship between Goal 1 and Goal 3 scores, meaning it aligns with our understanding that countries with a higher socio-economic status often are close to addressing their health-related goals.
+
+Following the initial scatter plot, we then fit a linear regression model with the data in order to identify potential insights into the strength of the relationship. Within the summary of the linear regression model, we interpreted the following conclusions. The estimated intercept was around 25.45, which indicates the expected Goal 3 score when the Goal 1 score is zero. Essentially, this suggests the expected progress in a scenario where a country has the lowest possible socio-economic status. The estimated coefficient for Goal 1 is around 0.58, which indicates that for every unit increase in a country’s Goal 1 score, we expect a 0.58 unit increase in the Goal 3 score. The standard error we got quantifies the variability in the precision of the coefficient. In our case, the t-value for both the coefficient and intercept for Goal 1 are both high indicating that the variability in Goal 3 scores is explained. Both the p-values are also extremely low indicating strong evidence against the null hypothesis. Thus, the null hypothesis is rejected and we can conclude that there is significant evidence regarding the positive relationship between the two goals. 
+
+We then plotted a residual plot in order to see if our relationship between our predictor variable and response variable is linear. We realized that our model does indicate a relationship as the variability in the residual data is well explained.
+
+Overall, our results show that there is significant enough evidence to conclude that there exists a positive relationship between Goal 1 and Goal 3 scores. The linear regression model shows the positive relationship between the two goals and the residual plot explains the variability in the residual data.
